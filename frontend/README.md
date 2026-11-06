@@ -30,3 +30,9 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Vercel deployment
+
+The Vite frontend and FastAPI API are served from one Vercel project. The Vercel build produces the frontend bundle and the FastAPI app serves it alongside `/api` endpoints.
+
+Configure a hosted PostgreSQL connection as `DATABASE_URL`, plus `APP_USERNAME` and `APP_PASSWORD` for the owner login, in the Vercel project environment variables. The app fails closed when deployment authentication or database settings are missing. Local development continues to use the SQLite database.

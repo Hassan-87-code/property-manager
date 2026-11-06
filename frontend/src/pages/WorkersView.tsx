@@ -22,6 +22,7 @@ import { Worker, WorkOrder, Property, Unit } from '../types';
 import { api } from '../services/api';
 import { StatusBadge } from '../components/StatusBadge';
 import { Modal } from '../components/Modal';
+import { formatCurrency } from '../utils/currency';
 
 export const WorkersView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'work_orders' | 'directory'>('work_orders');
@@ -210,14 +211,11 @@ export const WorkersView: React.FC = () => {
     }
   };
 
-  const formatCurrency = (amt: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amt);
-
   const openTicketsCount = workOrders.filter((w) => ['reported', 'assigned', 'in_progress'].includes(w.status)).length;
   const emergencyCount = workOrders.filter((w) => w.priority === 'emergency' && w.status !== 'completed').length;
 
   return (
-    <div className="space-y-6">
+    <div className="app-page space-y-6">
       {/* Tab Switcher: Work Orders vs Contractor Directory */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div className="flex items-center gap-2">
@@ -397,7 +395,7 @@ export const WorkersView: React.FC = () => {
               workOrders.map((wo) => (
                 <div
                   key={wo.id}
-                  className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 hover:shadow-md transition-all space-y-4"
+                  className="app-panel bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 hover:shadow-md transition-all space-y-4"
                 >
                   {/* Card Header */}
                   <div>
@@ -500,7 +498,7 @@ export const WorkersView: React.FC = () => {
             {workers.map((w) => (
               <div
                 key={w.id}
-                className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 hover:shadow-md transition-all space-y-4"
+                className="app-panel bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 hover:shadow-md transition-all space-y-4"
               >
                 <div>
                   <div className="flex items-start justify-between mb-3">
@@ -645,7 +643,7 @@ export const WorkersView: React.FC = () => {
                 <option value="">-- Leave Unassigned --</option>
                 {workers.map((w) => (
                   <option key={w.id} value={w.id}>
-                    {w.name} ({w.specialty}) - ${w.hourly_rate}/hr
+                    {w.name} ({w.specialty}) - {formatCurrency(w.hourly_rate)}/hr
                   </option>
                 ))}
               </select>
@@ -694,7 +692,7 @@ export const WorkersView: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Estimated Cost ($)
+                Estimated Cost (KSh)
               </label>
               <input
                 type="number"
@@ -709,7 +707,7 @@ export const WorkersView: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Actual Cost ($)
+                Actual Cost (KSh)
               </label>
               <input
                 type="number"
@@ -805,7 +803,7 @@ export const WorkersView: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Hourly Rate ($)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Hourly Rate (KSh)</label>
               <input
                 type="number"
                 min="0"

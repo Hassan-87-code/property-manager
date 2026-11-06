@@ -28,7 +28,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, type = 'rent' 
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize tracking-wide ${colorClasses}`}
+      className={`app-status inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border capitalize tracking-wide ${colorClasses}`}
     >
       <span className="w-1.5 h-1.5 mr-1.5 rounded-full bg-current opacity-70"></span>
       {label}

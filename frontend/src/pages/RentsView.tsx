@@ -17,6 +17,7 @@ import { RentPayment, Tenant } from '../types';
 import { api } from '../services/api';
 import { StatusBadge } from '../components/StatusBadge';
 import { Modal } from '../components/Modal';
+import { formatCurrency } from '../utils/currency';
 
 interface RentsViewProps {
   initialTenantId?: number | null;
@@ -44,7 +45,7 @@ export const RentsView: React.FC<RentsViewProps> = ({ initialTenantId }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createForm, setCreateForm] = useState({
     tenant_id: '' as string | number,
-    amount_due: 1500,
+    amount_due: 65000,
     amount_paid: 0,
     due_date: new Date().toISOString().split('T')[0],
     payment_method: 'Bank Transfer',
@@ -146,9 +147,6 @@ export const RentsView: React.FC<RentsViewProps> = ({ initialTenantId }) => {
     }
   };
 
-  const formatCurrency = (amt: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amt);
-
   // Financial Summary Numbers
   const totalDue = payments.reduce((sum, p) => sum + p.amount_due, 0);
   const totalPaid = payments.reduce((sum, p) => sum + p.amount_paid, 0);
@@ -156,10 +154,10 @@ export const RentsView: React.FC<RentsViewProps> = ({ initialTenantId }) => {
   const overdueCount = payments.filter((p) => p.status === 'overdue').length;
 
   return (
-    <div className="space-y-6">
+    <div className="app-page space-y-6">
       {/* Top Ledger Stats Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="app-panel bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Total Paid Collections
           </p>
@@ -167,7 +165,7 @@ export const RentsView: React.FC<RentsViewProps> = ({ initialTenantId }) => {
           <p className="text-xs text-slate-400 mt-1">From recorded transactions</p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="app-panel bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Outstanding Balance
           </p>
@@ -175,7 +173,7 @@ export const RentsView: React.FC<RentsViewProps> = ({ initialTenantId }) => {
           <p className="text-xs text-slate-400 mt-1">Pending and partial rent</p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="app-panel bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Overdue Invoices
           </p>
@@ -231,7 +229,7 @@ export const RentsView: React.FC<RentsViewProps> = ({ initialTenantId }) => {
             onClick={() => {
               setCreateForm({
                 tenant_id: tenants[0]?.id || '',
-                amount_due: tenants[0]?.rent_amount || 1500,
+                amount_due: tenants[0]?.rent_amount || 65000,
                 amount_paid: 0,
                 due_date: new Date().toISOString().split('T')[0],
                 payment_method: 'Bank Transfer',
@@ -250,7 +248,7 @@ export const RentsView: React.FC<RentsViewProps> = ({ initialTenantId }) => {
       </div>
 
       {/* Rent Payments Ledger Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="app-panel bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-xs text-slate-400">Loading ledger...</div>
         ) : payments.length === 0 ? (
@@ -389,7 +387,7 @@ export const RentsView: React.FC<RentsViewProps> = ({ initialTenantId }) => {
         <form onSubmit={handlePaySubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Payment Amount ($)
+              Payment Amount (KSh)
             </label>
             <input
               type="number"
@@ -507,7 +505,7 @@ export const RentsView: React.FC<RentsViewProps> = ({ initialTenantId }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Amount Due ($)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Amount Due (KSh)</label>
               <input
                 type="number"
                 min="1"

@@ -1,14 +1,144 @@
 @import "tailwindcss";
 
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --app-ink: #172638;
+  --app-muted: #64748b;
+  --app-line: #e3eaf1;
+  --app-canvas: #f3f6fa;
+  --app-brand: #167d78;
+  --app-brand-dark: #126762;
 }
+
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
-  padding: 0;
-  background-color: #f8fafc;
-  color: #0f172a;
+  min-width: 360px;
   min-height: 100vh;
+  background: var(--app-canvas);
+  color: var(--app-ink);
+}
+
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 3px solid rgb(20 145 157 / 38%); outline-offset: 2px; }
+::selection { background: rgb(20 145 157 / 20%); color: #102b3c; }
+
+.app-shell {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 70% -20%, #ffffff 0%, transparent 45%), var(--app-canvas);
+}
+
+.app-sidebar {
+  background: linear-gradient(180deg, #122638 0%, #0c1b2a 100%);
+  border-color: #203448;
+  box-shadow: 12px 0 32px rgb(15 35 55 / 8%);
+}
+
+.app-brand { border-color: rgb(255 255 255 / 8%); }
+.app-brand-mark {
+  background: linear-gradient(145deg, #35b8a4, #2673b8);
+  box-shadow: 0 8px 20px rgb(21 134 143 / 24%);
+}
+.app-nav-item {
+  min-height: 44px;
+  border: 1px solid transparent;
+  letter-spacing: .005em;
+}
+.app-nav-item.is-active {
+  background: linear-gradient(100deg, rgb(35 115 132 / 38%), rgb(30 79 102 / 34%));
+  border-color: rgb(128 205 208 / 14%);
+  box-shadow: inset 3px 0 #53c3b1, 0 4px 14px rgb(2 13 22 / 12%);
+}
+.app-nav-item.is-active svg { color: #a2e3d7; }
+.app-nav-item.is-inactive:hover { background: rgb(255 255 255 / 6%); }
+.app-sidebar > div:last-child { border-color: rgb(255 255 255 / 9%); }
+
+.app-header {
+  border-color: var(--app-line);
+  box-shadow: 0 2px 10px rgb(15 35 55 / 3%);
+}
+.app-header-title { letter-spacing: -.025em; }
+.app-date { border-color: #e7edf3; }
+.app-content { max-width: 1680px; }
+.app-page { animation: app-enter 180ms ease-out both; }
+
+.app-panel {
+  border-color: var(--app-line);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgb(18 38 56 / 3%), 0 8px 22px rgb(18 38 56 / 3%);
+}
+.app-stat-card {
+  min-height: 142px;
+  border-color: var(--app-line);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgb(18 38 56 / 3%), 0 8px 22px rgb(18 38 56 / 3%);
+}
+.app-stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgb(18 38 56 / 8%); }
+.app-status { white-space: nowrap; letter-spacing: .01em; }
+
+.app-content input:not([type="checkbox"]):not([type="radio"]),
+.app-content select,
+.app-content textarea {
+  border-color: #dbe4ed;
+  border-radius: 10px;
+  color: #23364a;
+  background-color: #fff;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.app-content input:not([type="checkbox"]):not([type="radio"]),
+.app-content select { min-height: 40px; }
+.app-content textarea { min-height: 96px; }
+.app-content input::placeholder, .app-content textarea::placeholder { color: #98a6b7; }
+.app-content input:focus, .app-content select:focus, .app-content textarea:focus {
+  border-color: #3b9b9a;
+  box-shadow: 0 0 0 3px rgb(38 145 145 / 12%);
+  outline: none;
+}
+
+.app-content table { border-collapse: separate; border-spacing: 0; }
+.app-content thead th {
+  color: #6b7b8f;
+  background: #f7f9fc;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+.app-content tbody tr { transition: background-color 120ms ease; }
+.app-content tbody tr:hover { background-color: #f8fafc; }
+.app-content tbody td { vertical-align: middle; }
+
+.app-modal { border-radius: 20px; box-shadow: 0 28px 90px rgb(10 28 45 / 24%); }
+.app-modal-header { background: #f8fafc; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border: 3px solid transparent; background-clip: padding-box; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; border: 3px solid transparent; background-clip: padding-box; }
+
+@keyframes app-enter {
+  from { opacity: .82; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 767px) {
+  body { min-width: 320px; }
+  .app-content { padding: 18px 14px 28px; }
+  .app-header { min-height: 68px; height: auto; padding: 12px 16px; }
+  .app-header-title { font-size: 18px; }
+  .app-page { gap: 18px; }
+  .app-stat-card { min-height: 124px; padding: 16px; }
+  .app-panel { border-radius: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

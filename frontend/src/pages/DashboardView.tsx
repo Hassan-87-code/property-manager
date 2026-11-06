@@ -11,24 +11,61 @@ import {
   ArrowDownRight,
   CheckCircle2,
   Clock,
+  Copy,
 } from 'lucide-react';
-import { DashboardStats } from '../types';
+import { DashboardStats, RentPayment } from '../types';
 import { StatCard } from '../components/StatCard';
 import { StatusBadge } from '../components/StatusBadge';
 import { NavTab } from '../components/Sidebar';
+import { formatCurrency } from '../utils/currency';
 
 interface DashboardViewProps {
   stats: DashboardStats | null;
+  rentPayments: RentPayment[];
+  asOfDate: Date | null;
+  error: string | null;
+  onRetry: () => void;
   onNavigate: (tab: NavTab) => void;
   onQuickAction: (action: 'rent' | 'expense' | 'work_order' | 'tenant') => void;
 }
 
+const daysBetween = (start: Date, end: Date) => {
+  const startUtc = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+  const endUtc = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+  return Math.round((endUtc - startUtc) / 86_400_000);
+};
+
+const formatDate = (date: Date) =>
+  new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+
 export const DashboardView: React.FC<DashboardViewProps> = ({
   stats,
+  rentPayments,
+  asOfDate,
+  error,
+  onRetry,
   onNavigate,
   onQuickAction,
 }) => {
-  if (!stats) {
+  if (!stats || !asOfDate) {
+    if (error) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center max-w-md">
+            <AlertCircle className="w-10 h-10 text-rose-500 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-slate-800">Could not load dashboard data</p>
+            <p className="text-xs text-slate-500 mt-1">{error}</p>
+            <button
+              onClick={onRetry}
+              className="mt-4 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-500"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -39,18 +76,40 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     );
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const collectionPercent =
     stats.monthly_expected_rent > 0
       ? Math.round((stats.monthly_collected_rent / stats.monthly_expected_rent) * 100)
       : 0;
+
+  const today = asOfDate;
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const unpaidRents = rentPayments
+    .map((payment) => {
+      const [year, month, day] = payment.due_date.split('-').map(Number);
+      const dueDate = new Date(year, month - 1, day);
+      return {
+        payment,
+        dueDate,
+        remaining: Math.max(payment.amount_due - payment.amount_paid, 0),
+        daysUntilDue: daysBetween(todayDate, dueDate),
+      };
+    })
+    .filter(({ remaining, daysUntilDue }) => remaining > 0.009 && daysUntilDue <= 3)
+    .sort((a, b) => a.daysUntilDue - b.daysUntilDue);
+  const daysUntilMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() - today.getDate();
+  const showMonthEndReminder = daysUntilMonthEnd <= 3;
+  const monthEndMessage = daysUntilMonthEnd === 0
+    ? 'The month ends today. Please remember to submit your rent payment if it is still outstanding.'
+    : `The month is ending in ${daysUntilMonthEnd} ${daysUntilMonthEnd === 1 ? 'day' : 'days'}. Please remember to submit your rent payment by its due date.`;
+
+  const handleCopyReminder = async (message: string) => {
+    try {
+      await navigator.clipboard.writeText(message);
+    } catch (err) {
+      console.error('Failed to copy tenant reminder', err);
+      alert('Could not copy the reminder. Please copy the message manually.');
+    }
+  };
 
   // Max expense for category percentage calculation
   const totalCategoryExpenses = stats.expenses_by_category.reduce((sum, item) => sum + item.total, 0) || 1;
@@ -62,7 +121,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="app-page space-y-6">
       {/* Quick Action Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent pointer-events-none" />
@@ -72,7 +131,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" /> Portfolio Health: Optimal
             </span>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-              Welcome back, Property Manager
+              Welcome back, Bobby Manager
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
               You have {stats.occupied_units} of {stats.total_units} units occupied ({stats.occupancy_rate}%),{' '}
@@ -106,6 +165,71 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </div>
+
+      {(unpaidRents.length > 0 || showMonthEndReminder) && (
+        <section aria-label="Rent reminders" className="space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-600" />
+            <h3 className="text-sm font-bold text-slate-900">Rent reminders</h3>
+          </div>
+
+          {unpaidRents.length > 0 && (
+            <div className="space-y-2">
+              {unpaidRents.slice(0, 5).map(({ payment, dueDate, remaining, daysUntilDue }) => {
+                const tenantName = payment.tenant_name || 'Tenant';
+                const dueText = daysUntilDue < 0
+                  ? `overdue by ${Math.abs(daysUntilDue)} ${Math.abs(daysUntilDue) === 1 ? 'day' : 'days'}`
+                  : daysUntilDue === 0
+                    ? 'due today'
+                    : `due in ${daysUntilDue} ${daysUntilDue === 1 ? 'day' : 'days'}`;
+                const reminder = `Hi ${tenantName}, this is a friendly reminder that your rent balance of ${formatCurrency(remaining)} is ${dueText} (${formatDate(dueDate)}). Please let us know if you have already paid. Thank you.`;
+
+                return (
+                  <div key={payment.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {tenantName} · {formatCurrency(remaining)} {dueText}
+                      </p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Suggested tenant message: “{reminder}”
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleCopyReminder(reminder)}
+                      className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      Copy message
+                    </button>
+                  </div>
+                );
+              })}
+              {unpaidRents.length > 5 && (
+                <p className="text-xs text-slate-500">
+                  {unpaidRents.length - 5} more rent {unpaidRents.length - 5 === 1 ? 'payment needs' : 'payments need'} attention.
+                </p>
+              )}
+            </div>
+          )}
+
+          {showMonthEndReminder && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Month-end tenant reminder</p>
+                <p className="text-xs text-slate-600 mt-1">Suggested message: “{monthEndMessage}”</p>
+                <p className="text-[11px] text-slate-500 mt-1">Copy and send this reminder to tenants; it is not sent automatically.</p>
+              </div>
+              <button
+                onClick={() => handleCopyReminder(monthEndMessage)}
+                className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-blue-300 bg-white px-3 py-2 text-xs font-semibold text-blue-900 hover:bg-blue-100"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Copy message
+              </button>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -156,7 +280,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Two Columns: Financial Trend & Expense Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Financial Cash Flow Trend (2 cols) */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+        <div className="lg:col-span-2 app-panel bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-base font-bold text-slate-900">Cash Flow History</h3>
@@ -228,7 +352,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         {/* Expenses by Category Breakdown (1 col) */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col justify-between">
+        <div className="app-panel bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -290,7 +414,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Two Column Bottom Section: Recent Rent Payments & Active Work Orders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Rent Payments */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+        <div className="app-panel bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">Recent Rent Activity</h3>
@@ -340,7 +464,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         {/* Active Work Orders */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+        <div className="app-panel bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">Maintenance & Work Orders</h3>
@@ -387,4 +511,3 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     </div>
   );
 };
-

@@ -53,17 +53,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-slate-900 text-slate-200 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 ${
+        className={`app-sidebar fixed top-0 bottom-0 left-0 z-40 w-64 bg-slate-900 text-slate-200 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } border-r border-slate-800`}
       >
         {/* App Branding */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-800/80 gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-bold text-xl">
-            P
+        <div className="app-brand h-16 flex items-center px-6 border-b border-slate-800/80 gap-3">
+          <div className="app-brand-mark w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-bold text-xl">
+            B
           </div>
           <div>
-            <h1 className="text-base font-bold text-white tracking-tight">PropManager</h1>
+            <h1 className="text-base font-bold text-white tracking-tight">Bobby Manager</h1>
             <p className="text-[11px] text-slate-400 font-medium">Landlord Portal</p>
           </div>
         </div>
@@ -80,10 +80,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => handleSelect(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                className={`app-nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                    ? 'is-active bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+                    : 'is-inactive text-slate-300 hover:text-white hover:bg-slate-800/80'
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
@@ -93,8 +93,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </nav>
 
-        {/* Demo Seed Reset Box */}
-        <div className="p-4 border-t border-slate-800/80 bg-slate-950/40">
+        {/* Demo Seed Reset Box (local development only) */}
+        {import.meta.env.DEV && <div className="p-4 border-t border-slate-800/80 bg-slate-950/40">
           <div className="bg-slate-800/70 rounded-xl p-3 border border-slate-700/50">
             <div className="flex items-center gap-2 mb-1.5">
               <Sparkles className="w-4 h-4 text-amber-400" />
@@ -111,17 +111,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {resetting ? 'Resetting...' : 'Reload Demo Data'}
             </button>
           </div>
-        </div>
+        </div>}
 
         {/* User profile footer */}
         <div className="px-5 py-3.5 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-200">
-              LM
+              BM
             </div>
             <div>
-              <p className="text-slate-200 font-semibold leading-tight">Admin Manager</p>
-              <p className="text-[11px] text-emerald-400">Online • SQLite DB</p>
+              <p className="text-slate-200 font-semibold leading-tight">Bobby Manager</p>
+              <p className="text-[11px] text-emerald-400">Online • Cloud database</p>
             </div>
           </div>
         </div>
@@ -129,4 +129,3 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </>
   );
 };
-

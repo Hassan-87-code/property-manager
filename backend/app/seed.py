@@ -45,30 +45,55 @@ def seed_database():
         total_units=2,
         description="Charming restored brick duplex near university campus and public transit."
     )
+    towba_total_units = 165
+    towba_occupied_units = int(towba_total_units * 0.8)
+    prop4 = Property(
+        name="TOWBA HEIGHT",
+        address="south b zanzibar road",
+        city="nairobi",
+        state="NAIROBI",
+        zip_code="0100",
+        property_type="Residential Multi-Family",
+        total_units=towba_total_units,
+        description="WELCOME TO TOWBA 1,2,3 APARTMENT"
+    )
 
-    db.add_all([prop1, prop2, prop3])
+    db.add_all([prop1, prop2, prop3, prop4])
     db.commit()
 
     # 2. Create Units
     units = [
         # Grandview Heights (6 units)
-        Unit(property_id=prop1.id, unit_number="101", bedrooms=1, bathrooms=1.0, square_feet=680, rent_amount=1550.0, deposit_amount=1550.0, status="occupied"),
-        Unit(property_id=prop1.id, unit_number="102", bedrooms=1, bathrooms=1.0, square_feet=700, rent_amount=1580.0, deposit_amount=1580.0, status="occupied"),
-        Unit(property_id=prop1.id, unit_number="201", bedrooms=2, bathrooms=2.0, square_feet=950, rent_amount=2150.0, deposit_amount=2150.0, status="occupied"),
-        Unit(property_id=prop1.id, unit_number="202", bedrooms=2, bathrooms=2.0, square_feet=980, rent_amount=2200.0, deposit_amount=2200.0, status="occupied"),
-        Unit(property_id=prop1.id, unit_number="301", bedrooms=3, bathrooms=2.5, square_feet=1350, rent_amount=2850.0, deposit_amount=2850.0, status="vacant"),
-        Unit(property_id=prop1.id, unit_number="302", bedrooms=2, bathrooms=1.5, square_feet=910, rent_amount=2050.0, deposit_amount=2050.0, status="maintenance"),
+        Unit(property_id=prop1.id, unit_number="101", bedrooms=1, bathrooms=1.0, square_feet=680, rent_amount=65000.0, deposit_amount=65000.0, status="occupied"),
+        Unit(property_id=prop1.id, unit_number="102", bedrooms=1, bathrooms=1.0, square_feet=700, rent_amount=65000.0, deposit_amount=65000.0, status="occupied"),
+        Unit(property_id=prop1.id, unit_number="201", bedrooms=2, bathrooms=2.0, square_feet=950, rent_amount=67000.0, deposit_amount=67000.0, status="occupied"),
+        Unit(property_id=prop1.id, unit_number="202", bedrooms=2, bathrooms=2.0, square_feet=980, rent_amount=67000.0, deposit_amount=67000.0, status="occupied"),
+        Unit(property_id=prop1.id, unit_number="301", bedrooms=3, bathrooms=2.5, square_feet=1350, rent_amount=67000.0, deposit_amount=67000.0, status="vacant"),
+        Unit(property_id=prop1.id, unit_number="302", bedrooms=2, bathrooms=1.5, square_feet=910, rent_amount=65000.0, deposit_amount=65000.0, status="maintenance"),
 
         # Oakwood Courtyard (4 units)
-        Unit(property_id=prop2.id, unit_number="A1", bedrooms=2, bathrooms=2.0, square_feet=1150, rent_amount=2400.0, deposit_amount=2400.0, status="occupied"),
-        Unit(property_id=prop2.id, unit_number="A2", bedrooms=2, bathrooms=2.0, square_feet=1150, rent_amount=2400.0, deposit_amount=2400.0, status="occupied"),
-        Unit(property_id=prop2.id, unit_number="B1", bedrooms=3, bathrooms=2.5, square_feet=1480, rent_amount=2950.0, deposit_amount=2950.0, status="occupied"),
-        Unit(property_id=prop2.id, unit_number="B2", bedrooms=3, bathrooms=2.5, square_feet=1480, rent_amount=2950.0, deposit_amount=2950.0, status="vacant"),
+        Unit(property_id=prop2.id, unit_number="A1", bedrooms=2, bathrooms=2.0, square_feet=1150, rent_amount=66000.0, deposit_amount=66000.0, status="occupied"),
+        Unit(property_id=prop2.id, unit_number="A2", bedrooms=2, bathrooms=2.0, square_feet=1150, rent_amount=66000.0, deposit_amount=66000.0, status="occupied"),
+        Unit(property_id=prop2.id, unit_number="B1", bedrooms=3, bathrooms=2.5, square_feet=1480, rent_amount=67000.0, deposit_amount=67000.0, status="occupied"),
+        Unit(property_id=prop2.id, unit_number="B2", bedrooms=3, bathrooms=2.5, square_feet=1480, rent_amount=67000.0, deposit_amount=67000.0, status="vacant"),
 
         # Highland Park Duplex (2 units)
-        Unit(property_id=prop3.id, unit_number="Unit 1", bedrooms=2, bathrooms=1.0, square_feet=850, rent_amount=1750.0, deposit_amount=1750.0, status="occupied"),
-        Unit(property_id=prop3.id, unit_number="Unit 2", bedrooms=2, bathrooms=1.0, square_feet=850, rent_amount=1750.0, deposit_amount=1750.0, status="occupied"),
+        Unit(property_id=prop3.id, unit_number="Unit 1", bedrooms=2, bathrooms=1.0, square_feet=850, rent_amount=65000.0, deposit_amount=65000.0, status="occupied"),
+        Unit(property_id=prop3.id, unit_number="Unit 2", bedrooms=2, bathrooms=1.0, square_feet=850, rent_amount=65000.0, deposit_amount=65000.0, status="occupied"),
     ]
+    units.extend(
+        Unit(
+            property_id=prop4.id,
+            unit_number=f"A{unit_index // 55 + 1}-{unit_index % 55 + 1:03}",
+            bedrooms=3,
+            bathrooms=2.0,
+            square_feet=750,
+            rent_amount=65000.0 + (unit_index % 3) * 1000,
+            deposit_amount=0.0,
+            status="occupied" if unit_index < towba_occupied_units else "vacant",
+        )
+        for unit_index in range(towba_total_units)
+    )
     db.add_all(units)
     db.commit()
 
@@ -139,8 +164,8 @@ def seed_database():
             emergency_contact="Mark Jenkins (Brother) - 303-712-8820",
             lease_start=date(2025, 6, 1),
             lease_end=date(2026, 5, 31),
-            rent_amount=1550.0,
-            deposit_paid=1550.0,
+            rent_amount=65000.0,
+            deposit_paid=65000.0,
             status="active",
             notes="Works remotely in tech. Has one small registered service cat."
         ),
@@ -153,8 +178,8 @@ def seed_database():
             emergency_contact="Laura Wright (Mother) - 720-419-1100",
             lease_start=date(2025, 8, 1),
             lease_end=date(2026, 7, 31),
-            rent_amount=1580.0,
-            deposit_paid=1580.0,
+            rent_amount=65000.0,
+            deposit_paid=65000.0,
             status="active",
             notes="Always pays rent on the 1st via bank transfer."
         ),
@@ -167,8 +192,8 @@ def seed_database():
             emergency_contact="Robert Carter - 303-902-9999",
             lease_start=date(2025, 4, 1),
             lease_end=date(2026, 3, 31),
-            rent_amount=2150.0,
-            deposit_paid=2150.0,
+            rent_amount=67000.0,
+            deposit_paid=67000.0,
             status="active",
             notes="Requested extra parking pass."
         ),
@@ -181,8 +206,8 @@ def seed_database():
             emergency_contact="Linda Chang - 720-844-0012",
             lease_start=date(2025, 11, 1),
             lease_end=date(2026, 10, 31),
-            rent_amount=2200.0,
-            deposit_paid=2200.0,
+            rent_amount=67000.0,
+            deposit_paid=67000.0,
             status="active",
             notes="Graphic designer. Quiet tenant."
         ),
@@ -195,8 +220,8 @@ def seed_database():
             emergency_contact="Dan Greenberg - 303-633-9000",
             lease_start=date(2025, 2, 1),
             lease_end=date(2026, 1, 31),
-            rent_amount=2400.0,
-            deposit_paid=2400.0,
+            rent_amount=66000.0,
+            deposit_paid=66000.0,
             status="active",
             notes="University faculty researcher."
         ),
@@ -209,8 +234,8 @@ def seed_database():
             emergency_contact="Diane Wilson - 720-299-4411",
             lease_start=date(2025, 9, 1),
             lease_end=date(2026, 8, 31),
-            rent_amount=2400.0,
-            deposit_paid=2400.0,
+            rent_amount=66000.0,
+            deposit_paid=66000.0,
             status="active",
             notes="Renewed lease for second consecutive year."
         ),
@@ -223,8 +248,8 @@ def seed_database():
             emergency_contact="Thomas Foster - 303-512-8877",
             lease_start=date(2025, 5, 1),
             lease_end=date(2026, 4, 30),
-            rent_amount=2950.0,
-            deposit_paid=2950.0,
+            rent_amount=67000.0,
+            deposit_paid=67000.0,
             status="active",
             notes="Family with 1 child. Excellent tenants."
         ),
@@ -237,8 +262,8 @@ def seed_database():
             emergency_contact="Kelly Sullivan - 970-310-8800",
             lease_start=date(2025, 7, 1),
             lease_end=date(2026, 6, 30),
-            rent_amount=1750.0,
-            deposit_paid=1750.0,
+            rent_amount=65000.0,
+            deposit_paid=65000.0,
             status="active",
             notes="Grad student in environmental sciences."
         ),
@@ -251,8 +276,8 @@ def seed_database():
             emergency_contact="Gloria Torres - 970-441-1122",
             lease_start=date(2025, 3, 1),
             lease_end=date(2026, 2, 28),
-            rent_amount=1750.0,
-            deposit_paid=1750.0,
+            rent_amount=65000.0,
+            deposit_paid=65000.0,
             status="active",
             notes="Freelance photographer."
         )
@@ -270,8 +295,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[0].id,
             unit_id=units[0].id,
-            amount_due=1550.0,
-            amount_paid=1550.0,
+            amount_due=tenants[0].rent_amount,
+            amount_paid=tenants[0].rent_amount,
             due_date=current_month_first,
             payment_date=current_month_first + timedelta(days=2),
             payment_method="Bank Transfer",
@@ -282,8 +307,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[1].id,
             unit_id=units[1].id,
-            amount_due=1580.0,
-            amount_paid=1580.0,
+            amount_due=tenants[1].rent_amount,
+            amount_paid=tenants[1].rent_amount,
             due_date=current_month_first,
             payment_date=current_month_first,
             payment_method="Bank Transfer",
@@ -294,8 +319,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[2].id,
             unit_id=units[2].id,
-            amount_due=2150.0,
-            amount_paid=2150.0,
+            amount_due=tenants[2].rent_amount,
+            amount_paid=tenants[2].rent_amount,
             due_date=current_month_first,
             payment_date=current_month_first + timedelta(days=1),
             payment_method="Credit Card",
@@ -306,20 +331,20 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[3].id,
             unit_id=units[3].id,
-            amount_due=2200.0,
-            amount_paid=1100.0,
+            amount_due=tenants[3].rent_amount,
+            amount_paid=tenants[3].rent_amount / 2,
             due_date=current_month_first,
             payment_date=current_month_first + timedelta(days=4),
             payment_method="Zelle",
             status="partial",
             reference_number="ZEL-44021",
-            notes="Split payment agreed with landlord. Remaining $1,100 due by 20th."
+            notes="Split payment agreed with landlord. Remaining KSh 33,500 due by 20th."
         ),
         RentPayment(
             tenant_id=tenants[4].id,
             unit_id=units[6].id,
-            amount_due=2400.0,
-            amount_paid=2400.0,
+            amount_due=tenants[4].rent_amount,
+            amount_paid=tenants[4].rent_amount,
             due_date=current_month_first,
             payment_date=current_month_first,
             payment_method="Bank Transfer",
@@ -330,7 +355,7 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[5].id,
             unit_id=units[7].id,
-            amount_due=2400.0,
+            amount_due=tenants[5].rent_amount,
             amount_paid=0.0,
             due_date=current_month_first,
             payment_date=None,
@@ -342,8 +367,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[6].id,
             unit_id=units[8].id,
-            amount_due=2950.0,
-            amount_paid=2950.0,
+            amount_due=tenants[6].rent_amount,
+            amount_paid=tenants[6].rent_amount,
             due_date=current_month_first,
             payment_date=current_month_first + timedelta(days=1),
             payment_method="Check",
@@ -354,8 +379,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[7].id,
             unit_id=units[10].id,
-            amount_due=1750.0,
-            amount_paid=1750.0,
+            amount_due=tenants[7].rent_amount,
+            amount_paid=tenants[7].rent_amount,
             due_date=current_month_first,
             payment_date=current_month_first + timedelta(days=3),
             payment_method="Bank Transfer",
@@ -366,8 +391,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[8].id,
             unit_id=units[11].id,
-            amount_due=1750.0,
-            amount_paid=1750.0,
+            amount_due=tenants[8].rent_amount,
+            amount_paid=tenants[8].rent_amount,
             due_date=current_month_first,
             payment_date=current_month_first + timedelta(days=2),
             payment_method="Zelle",
@@ -379,8 +404,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[0].id,
             unit_id=units[0].id,
-            amount_due=1550.0,
-            amount_paid=1550.0,
+            amount_due=tenants[0].rent_amount,
+            amount_paid=tenants[0].rent_amount,
             due_date=last_month_first,
             payment_date=last_month_first + timedelta(days=1),
             payment_method="Bank Transfer",
@@ -390,8 +415,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[1].id,
             unit_id=units[1].id,
-            amount_due=1580.0,
-            amount_paid=1580.0,
+            amount_due=tenants[1].rent_amount,
+            amount_paid=tenants[1].rent_amount,
             due_date=last_month_first,
             payment_date=last_month_first,
             payment_method="Bank Transfer",
@@ -401,8 +426,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[2].id,
             unit_id=units[2].id,
-            amount_due=2150.0,
-            amount_paid=2150.0,
+            amount_due=tenants[2].rent_amount,
+            amount_paid=tenants[2].rent_amount,
             due_date=last_month_first,
             payment_date=last_month_first + timedelta(days=2),
             payment_method="Credit Card",
@@ -412,8 +437,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[4].id,
             unit_id=units[6].id,
-            amount_due=2400.0,
-            amount_paid=2400.0,
+            amount_due=tenants[4].rent_amount,
+            amount_paid=tenants[4].rent_amount,
             due_date=last_month_first,
             payment_date=last_month_first,
             payment_method="Bank Transfer",
@@ -423,8 +448,8 @@ def seed_database():
         RentPayment(
             tenant_id=tenants[6].id,
             unit_id=units[8].id,
-            amount_due=2950.0,
-            amount_paid=2950.0,
+            amount_due=tenants[6].rent_amount,
+            amount_paid=tenants[6].rent_amount,
             due_date=last_month_first,
             payment_date=last_month_first + timedelta(days=1),
             payment_method="Check",
@@ -666,4 +691,3 @@ def seed_database():
 
 if __name__ == "__main__":
     seed_database()
-

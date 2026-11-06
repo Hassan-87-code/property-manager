@@ -1,0 +1,9 @@
+.git/
+.env*
+.venv/
+backend/venv/
+frontend/node_modules/
+frontend/dist/
+backend/property_manager.db
+**/__pycache__/
+*.py[cod]

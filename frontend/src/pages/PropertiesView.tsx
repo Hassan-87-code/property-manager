@@ -17,6 +17,7 @@ import { Property, Unit } from '../types';
 import { api } from '../services/api';
 import { StatusBadge } from '../components/StatusBadge';
 import { Modal } from '../components/Modal';
+import { formatCurrency } from '../utils/currency';
 
 export const PropertiesView: React.FC = () => {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -24,6 +25,8 @@ export const PropertiesView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
+  const [unitStatusFilter, setUnitStatusFilter] = useState<'all' | 'occupied' | 'not_occupied'>('all');
+  const [unitSearch, setUnitSearch] = useState('');
 
   // Modals
   const [isPropModalOpen, setIsPropModalOpen] = useState(false);
@@ -47,8 +50,8 @@ export const PropertiesView: React.FC = () => {
     bedrooms: 1,
     bathrooms: 1.0,
     square_feet: 750,
-    rent_amount: 1500,
-    deposit_amount: 1500,
+    rent_amount: 65000,
+    deposit_amount: 65000,
     status: 'vacant' as 'occupied' | 'vacant' | 'maintenance',
   });
 
@@ -61,9 +64,7 @@ export const PropertiesView: React.FC = () => {
       ]);
       setProperties(propsData);
       setUnits(unitsData);
-      if (propsData.length > 0 && selectedPropertyId === null) {
-        setSelectedPropertyId(propsData[0].id);
-      }
+
     } catch (err) {
       console.error('Failed to load properties/units', err);
     } finally {
@@ -160,10 +161,20 @@ export const PropertiesView: React.FC = () => {
   };
 
   const selectedUnits = units.filter((u) => u.property_id === selectedPropertyId);
+  const occupiedCount = selectedUnits.filter((u) => u.status === 'occupied').length;
+  const notOccupiedCount = selectedUnits.length - occupiedCount;
+  const vacantCount = selectedUnits.filter((u) => u.status === 'vacant').length;
+  const maintenanceCount = selectedUnits.filter((u) => u.status === 'maintenance').length;
+  const visibleUnits = selectedUnits.filter((u) => {
+    const matchesStatus = unitStatusFilter === 'all' || (unitStatusFilter === 'occupied' ? u.status === 'occupied' : u.status !== 'occupied');
+    const query = unitSearch.trim().toLowerCase();
+    const matchesSearch = !query || [u.unit_number, u.current_tenant_name || '', u.status].some((value) => value.toLowerCase().includes(query));
+    return matchesStatus && matchesSearch;
+  });
   const activeProperty = properties.find((p) => p.id === selectedPropertyId);
 
   return (
-    <div className="space-y-6">
+    <div className="app-page space-y-6">
       {/* Search & Actions Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
@@ -228,7 +239,7 @@ export const PropertiesView: React.FC = () => {
             return (
               <div
                 key={p.id}
-                onClick={() => setSelectedPropertyId(p.id)}
+                onClick={() => { setSelectedPropertyId(p.id); setUnitStatusFilter('all'); setUnitSearch(''); }}
                 className={`p-4.5 rounded-2xl border transition-all cursor-pointer relative ${
                   isSelected
                     ? 'bg-blue-50/50 border-blue-500 shadow-xs ring-1 ring-blue-500/20'
@@ -289,7 +300,7 @@ export const PropertiesView: React.FC = () => {
         {/* Right Side: Units for Selected Property (7 cols) */}
         <div className="lg:col-span-7">
           {activeProperty ? (
-            <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs space-y-6">
+            <div className="app-panel bg-white rounded-2xl border border-slate-200/90 p-6 shadow-xs space-y-6">
               {/* Selected Property Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
                 <div>
@@ -313,8 +324,8 @@ export const PropertiesView: React.FC = () => {
                       bedrooms: 1,
                       bathrooms: 1.0,
                       square_feet: 800,
-                      rent_amount: 1600,
-                      deposit_amount: 1600,
+                      rent_amount: 65000,
+                      deposit_amount: 65000,
                       status: 'vacant',
                     });
                     setIsUnitModalOpen(true);
@@ -326,8 +337,52 @@ export const PropertiesView: React.FC = () => {
                 </button>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" aria-label="Unit occupancy summary">
+                <button
+                  type="button"
+                  onClick={() => setUnitStatusFilter(unitStatusFilter === 'occupied' ? 'all' : 'occupied')}
+                  aria-pressed={unitStatusFilter === 'occupied'}
+                  className={`text-left p-4 rounded-xl border transition-colors ${unitStatusFilter === 'occupied' ? 'border-emerald-300 bg-emerald-50 ring-1 ring-emerald-200' : 'border-slate-200 bg-white hover:border-emerald-200'}`}
+                >
+                  <span className="block text-xs font-semibold text-slate-500">Occupied</span>
+                  <span className="block text-2xl font-bold text-slate-900 mt-1">{occupiedCount}</span>
+                  <span className="block text-[11px] text-slate-500 mt-1">Click to view occupied units</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnitStatusFilter(unitStatusFilter === 'not_occupied' ? 'all' : 'not_occupied')}
+                  aria-pressed={unitStatusFilter === 'not_occupied'}
+                  className={`text-left p-4 rounded-xl border transition-colors ${unitStatusFilter === 'not_occupied' ? 'border-amber-300 bg-amber-50 ring-1 ring-amber-200' : 'border-slate-200 bg-white hover:border-amber-200'}`}
+                >
+                  <span className="block text-xs font-semibold text-slate-500">Not occupied</span>
+                  <span className="block text-2xl font-bold text-slate-900 mt-1">{notOccupiedCount}</span>
+                  <span className="block text-[11px] text-slate-500 mt-1">{vacantCount} vacant · {maintenanceCount} maintenance</span>
+                </button>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="relative w-full sm:max-w-sm">
+                  <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="search"
+                    aria-label="Search units"
+                    placeholder="Find by unit number, tenant, or status..."
+                    value={unitSearch}
+                    onChange={(e) => setUnitSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 text-sm"
+                  />
+                </div>
+                <span className="text-xs text-slate-500" aria-live="polite">
+                  Showing {visibleUnits.length} of {selectedUnits.length} units
+                </span>
+              </div>
+              {unitStatusFilter !== 'all' && (
+                <button type="button" onClick={() => setUnitStatusFilter('all')} className="text-xs font-semibold text-blue-700 hover:text-blue-800">
+                  Show all {selectedUnits.length} units
+                </button>
+              )}
+
               {/* Units Grid */}
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {selectedUnits.length === 0 ? (
                   <div className="p-8 text-center border border-dashed border-slate-200 rounded-xl">
                     <DoorOpen className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -336,56 +391,58 @@ export const PropertiesView: React.FC = () => {
                       Click "Add Unit" to set up apartments or rooms for this property.
                     </p>
                   </div>
+                ) : visibleUnits.length === 0 ? (
+                  <div className="p-6 text-center border border-dashed border-slate-200 rounded-xl text-xs text-slate-500">No units match your search or filter.</div>
                 ) : (
-                  selectedUnits.map((u) => (
+                  visibleUnits.map((u) => (
                     <div
                       key={u.id}
-                      className="p-4 rounded-xl border border-slate-100 hover:border-slate-200 bg-slate-50/40 hover:bg-slate-50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      className="min-w-0 rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center font-bold text-slate-800 text-sm shadow-2xs">
-                          {u.unit_number}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-900">
-                              Unit {u.unit_number}
-                            </span>
-                            <StatusBadge status={u.status} type="unit" />
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-700">
+                            {u.unit_number}
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {u.bedrooms} Bed • {u.bathrooms} Bath • {u.square_feet} sq ft
-                          </p>
-                          {u.current_tenant_name && (
-                            <p className="text-[11px] font-medium text-blue-600 mt-1 flex items-center gap-1">
-                              <Users className="w-3 h-3" /> Tenant: {u.current_tenant_name}
-                            </p>
-                          )}
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900">Unit {u.unit_number}</p>
+                            <p className="mt-0.5 text-[11px] text-slate-500">{u.bedrooms} bed · {u.bathrooms} bath</p>
+                          </div>
                         </div>
+                        <StatusBadge status={u.status} type="unit" />
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
-                        <div className="text-left sm:text-right">
-                          <p className="text-sm font-bold text-slate-900">
-                            ${u.rent_amount.toLocaleString()}/mo
-                          </p>
-                          <p className="text-[10px] text-slate-400">
-                            Dep: ${u.deposit_amount.toLocaleString()}
-                          </p>
-                        </div>
+                      <p className="mt-3 text-xs text-slate-500">{u.square_feet.toLocaleString()} sq ft</p>
+                      {u.current_tenant_name && (
+                        <p className="mt-2 flex min-w-0 items-center gap-1.5 truncate text-xs font-medium text-slate-600" title={u.current_tenant_name}>
+                          <Users className="h-3.5 w-3.5 shrink-0 text-blue-600" />
+                          <span className="truncate">{u.current_tenant_name}</span>
+                        </p>
+                      )}
 
-                        <div className="flex items-center gap-1">
+                      <div className="mt-3 flex items-end justify-between gap-2 border-t border-slate-100 pt-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-slate-900">{formatCurrency(u.rent_amount)}<span className="ml-1 text-[10px] font-medium text-slate-500">/ month</span></p>
+                          <p className="mt-0.5 text-[10px] text-slate-500">Deposit {formatCurrency(u.deposit_amount)}</p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1">
                           <button
+                            type="button"
+                            aria-label={`Edit unit ${u.unit_number}`}
+                            title="Edit unit"
                             onClick={() => handleOpenUnitEdit(u)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+                            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
                           >
-                            <Edit2 className="w-3.5 h-3.5" />
+                            <Edit2 className="h-4 w-4" />
                           </button>
                           <button
+                            type="button"
+                            aria-label={`Delete unit ${u.unit_number}`}
+                            title="Delete unit"
                             onClick={() => handleDeleteUnit(u.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       </div>
@@ -397,9 +454,9 @@ export const PropertiesView: React.FC = () => {
           ) : (
             <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-400">
               <Building2 className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-              <p className="text-sm font-semibold text-slate-600">Select a property</p>
+              <p className="text-sm font-semibold text-slate-600">Select a property to view its units</p>
               <p className="text-xs text-slate-400 mt-1">
-                Choose a property from the left to view and configure its units.
+                Choose an apartment from the list to view and manage its units.
               </p>
             </div>
           )}
@@ -609,7 +666,7 @@ export const PropertiesView: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Monthly Rent ($)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Monthly Rent (KSh)</label>
               <input
                 type="number"
                 min="0"
@@ -621,7 +678,7 @@ export const PropertiesView: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Security Deposit ($)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Security Deposit (KSh)</label>
               <input
                 type="number"
                 min="0"
@@ -654,4 +711,3 @@ export const PropertiesView: React.FC = () => {
     </div>
   );
 };
-

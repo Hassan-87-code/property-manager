@@ -18,6 +18,7 @@ import { Expense, Property, Unit, Worker, CategoryExpenseSummary } from '../type
 import { api } from '../services/api';
 import { StatusBadge } from '../components/StatusBadge';
 import { Modal } from '../components/Modal';
+import { formatCurrency } from '../utils/currency';
 
 export const ExpensesView: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -142,15 +143,12 @@ export const ExpensesView: React.FC = () => {
     }
   };
 
-  const formatCurrency = (amt: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amt);
-
   const totalExpenseAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="app-page space-y-6">
       {/* Category Summary Carousel / Chips */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs">
+      <div className="app-panel bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <PieChart className="w-4 h-4 text-slate-500" />
@@ -251,7 +249,7 @@ export const ExpensesView: React.FC = () => {
       </div>
 
       {/* Expenses Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="app-panel bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-xs text-slate-400">Loading expenses...</div>
         ) : expenses.length === 0 ? (
@@ -421,7 +419,7 @@ export const ExpensesView: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Amount ($)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Amount (KSh)</label>
               <input
                 type="number"
                 step="0.01"

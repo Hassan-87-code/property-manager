@@ -17,6 +17,7 @@ import { Tenant, Unit, Property } from '../types';
 import { api } from '../services/api';
 import { StatusBadge } from '../components/StatusBadge';
 import { Modal } from '../components/Modal';
+import { formatCurrency } from '../utils/currency';
 
 interface TenantsViewProps {
   onQuickPay?: (tenantId: number) => void;
@@ -42,8 +43,8 @@ export const TenantsView: React.FC<TenantsViewProps> = ({ onQuickPay }) => {
     emergency_contact: '',
     lease_start: '',
     lease_end: '',
-    rent_amount: 1500,
-    deposit_paid: 1500,
+    rent_amount: 65000,
+    deposit_paid: 65000,
     status: 'active' as 'active' | 'past' | 'pending',
     notes: '',
   });
@@ -120,9 +121,6 @@ export const TenantsView: React.FC<TenantsViewProps> = ({ onQuickPay }) => {
     }
   };
 
-  const formatCurrency = (amt: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amt);
-
   // Helper to get unit label
   const getUnitOptionLabel = (u: Unit) => {
     const prop = properties.find((p) => p.id === u.property_id);
@@ -130,7 +128,7 @@ export const TenantsView: React.FC<TenantsViewProps> = ({ onQuickPay }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="app-page space-y-6">
       {/* Top Filter & Search Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2 flex-wrap">
@@ -176,8 +174,8 @@ export const TenantsView: React.FC<TenantsViewProps> = ({ onQuickPay }) => {
               lease_end: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
                 .toISOString()
                 .split('T')[0],
-              rent_amount: 1600,
-              deposit_paid: 1600,
+              rent_amount: 65000,
+              deposit_paid: 65000,
               status: 'active',
               notes: '',
             });
@@ -191,7 +189,7 @@ export const TenantsView: React.FC<TenantsViewProps> = ({ onQuickPay }) => {
       </div>
 
       {/* Tenants Table & Cards */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="app-panel bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
             <p className="text-xs text-slate-400">Loading tenants...</p>
@@ -457,7 +455,7 @@ export const TenantsView: React.FC<TenantsViewProps> = ({ onQuickPay }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Agreed Monthly Rent ($)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Agreed Monthly Rent (KSh)</label>
               <input
                 type="number"
                 min="0"
@@ -468,7 +466,7 @@ export const TenantsView: React.FC<TenantsViewProps> = ({ onQuickPay }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Deposit Paid ($)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Deposit Paid (KSh)</label>
               <input
                 type="number"
                 min="0"
@@ -522,4 +520,3 @@ export const TenantsView: React.FC<TenantsViewProps> = ({ onQuickPay }) => {
     </div>
   );
 };
-

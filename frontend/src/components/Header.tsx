@@ -51,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
   }).format(new Date());
 
   return (
-    <header className="sticky top-0 z-30 h-18 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-6 flex items-center justify-between">
+    <header className="app-header sticky top-0 z-30 h-[76px] bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-5 sm:px-8 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenMobileMenu}
@@ -60,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
           <Menu className="w-6 h-6" />
         </button>
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight leading-tight">
+          <h2 className="app-header-title text-xl font-bold text-slate-900 tracking-tight leading-tight">
             {current.title}
           </h2>
           <p className="text-xs text-slate-500 hidden sm:block font-medium">
@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200/70 text-xs text-slate-600 font-medium">
+        <div className="app-date hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200/70 text-xs text-slate-600 font-medium">
           <Calendar className="w-3.5 h-3.5 text-slate-400" />
           <span>{todayFormatted}</span>
         </div>
