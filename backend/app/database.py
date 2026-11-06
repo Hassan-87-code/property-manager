@@ -4,8 +4,11 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "property_manager.db")
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Vercel's Neon integration currently exposes POSTGRES_URL by default, while
+# standalone Neon setups commonly expose DATABASE_URL. Accept either so the
+# same application can run from both environments.
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL")
 if SQLALCHEMY_DATABASE_URL:
     # Use psycopg 3 for hosted PostgreSQL URLs (including Neon/Vercel integrations).
     if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
@@ -29,15 +32,5 @@ else:
     engine_options["max_overflow"] = 0
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, **engine_options)
-
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
